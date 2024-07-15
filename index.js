@@ -1,19 +1,17 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import connectDB from './src/db/connection.js';
-import User from './src/models/userMod.js';
+import {connectDB} from './src/db/connection.js';
+import User from './models/User.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 // Load environment variables from .env file
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 5000;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-app.use(express.json());
 
 app.get('/', (req, res) => {
     res.send('Hello World');
@@ -21,7 +19,7 @@ app.get('/', (req, res) => {
 //REGISTER ROUTE
 app.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password, phoneNumber, coverImage, isVolunteer } = req.body;
 
         // Check if the email is already in use
         const existingUser = await User.findOne({ email });
@@ -36,10 +34,23 @@ app.post('/register', async (req, res) => {
             });
         }
 
-        const user = new User({ firstName, lastName, email, password });
+        // Set default cover image if not provided
+        const defaultCoverImage = coverImage || 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
+        const defaultPhoneNumber = phoneNumber || '0123456789'
+
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            password,
+            phoneNumber: phoneNumber || '0123456789', // default to an empty string if not provided
+            coverImage: defaultCoverImage,
+            isVolunteer: isVolunteer || false // default to false if not provided
+        });
+        
         await user.save();
 
-        // Generate JWT with no expiration (or very long expiry)
+        // Generate JWT with a 365-day expiry
         const token = jwt.sign(
             { userId: user._id, email: user.email },
             JWT_SECRET,
@@ -55,7 +66,7 @@ app.post('/register', async (req, res) => {
                 userId: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                photoUrl: 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg'
+                photoUrl: user.coverImage // Using the user-provided or default cover image
             }
         });
     } catch (error) {
@@ -68,6 +79,7 @@ app.post('/register', async (req, res) => {
         });
     }
 });
+
 //LOGIN ROUTE
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -75,7 +87,6 @@ app.post('/login', async (req, res) => {
     try {
         // Check if the user exists
         const user = await User.findOne({ email });
-        // console.log(user);
         if (!user) {
             return res.status(404).json({ success: false, error: 'User not found' });
         }
@@ -103,12 +114,16 @@ app.post('/login', async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
+                phoneNumber: user.phoneNumber || '0123456789',
+                coverImage: user.coverImage,
+                isVolunteer: user.isVolunteer
             }
-        });
+        })
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

@@ -24,6 +24,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    phoneNumber: {
+        type: String,
+        trim: true,
+        default: '0123456789'
+    },
+    coverImage: {
+        type: String,
+        trim: true,
+        default: 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg'
+    },
+    isVolunteer: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
