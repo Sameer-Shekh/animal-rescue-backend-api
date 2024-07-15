@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import express from "express";
 import cors from "cors";
 import cookieParser from "Cookie-Parser";
@@ -27,3 +28,5 @@ app.use(cookieParser());
 // app.use("/user",userRouter)
 
 export {app};
+=======
+>>>>>>> parent of cab6d66 (write utils code for handling reques)
