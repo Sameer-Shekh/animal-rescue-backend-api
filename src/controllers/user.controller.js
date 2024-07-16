@@ -161,7 +161,7 @@ const uploadImage = (req, res) => {
 
         // Update the user's profile image
         const user = await User.findById(decoded.userId);
-        user.coverImage = uploadedImage.result.secure_url;
+        user.profileImage = uploadedImage.result.secure_url;
         await user.save();
   
         return res.status(201).send({ success: true, message: 'Image uploaded successfully', imageUrl: uploadedImage.result.secure_url });
