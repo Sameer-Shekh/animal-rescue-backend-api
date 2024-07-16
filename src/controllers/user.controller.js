@@ -2,15 +2,19 @@ import dotenv from 'dotenv';
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import passport from 'passport';
+import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct path to multer middleware
+import authenticate  from '../middlewares/authMiddleware.js'; // Ensure correct path to authMiddleware
+import fs from 'fs';
+import { uploadImageCloud } from '../utils/cloudinary.js';
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, phoneNumber, coverImage, isVolunteer } = req.body;
+        const { firstName, lastName, email, password, phoneNumber, profileImage, isVolunteer } = req.body;
 
         // Check if the email is already in use
         const existingUser = await User.findOne({ email });
@@ -26,7 +30,7 @@ const registerUser = async (req, res) => {
         }
 
         // Set default cover image if not provided
-        const defaultCoverImage = coverImage || 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
+        const defaultCoverImage = profileImage || 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
 
         const user = new User({
             firstName,
@@ -34,15 +38,16 @@ const registerUser = async (req, res) => {
             email,
             password,
             phoneNumber: phoneNumber || '0123466789', // default to an empty string if not provided
-            coverImage: defaultCoverImage,
+            profileImage: defaultCoverImage || 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg',
             isVolunteer: isVolunteer || false // default to false if not provided
         });
         
         await user.save();
 
         // Generate JWT with a 365-day expiry
+        const perdet = { userId: user._id, email: user.email }
         const token = jwt.sign(
-            { userId: user._id, email: user.email },
+            perdet,
             JWT_SECRET,
             { expiresIn: '365d' } // Token expires in 365 days (1 year)
         );
@@ -56,7 +61,8 @@ const registerUser = async (req, res) => {
                 userId: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                photoUrl: user.coverImage // Using the user-provided or default cover image
+                email: user.email,
+                profileImage: user.profileImage // Using the user-provided or default cover image
             }
         });
     } 
@@ -73,7 +79,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) =>{
     const { email, password } = req.body;
-
     try {
         // Check if the user exists
         const user = await User.findOne({ email });
@@ -88,8 +93,9 @@ const loginUser = async (req, res) =>{
         }
 
         // Generate JWT
+        const perdet = { userId: user._id, email: user.email };
         const token = jwt.sign(
-            { userId: user._id, email: user.email },
+            perdet,
             JWT_SECRET,
             { expiresIn: '365d' } // Token expires in 365 days (1 year)
         );
@@ -103,17 +109,69 @@ const loginUser = async (req, res) =>{
                 userId: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                coverImage: user.coverImage,
+                profileImage: user.profileImage,
             }
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 }
+const uploadImage = (req, res) => {
+    upload.single('profileImage')(req, res, async (err) => {
+      if (err) {
+        console.error('Upload error:', err);
+        return res.status(400).send({ success: false, message: 'Upload failed' });
+      }
+  
+      try {
+        const token = req.header('Authorization').replace('Bearer ', '');
+  
+        if (!process.env.JWT_SECRET) {
+          throw new Error('JWT_SECRET is not defined');
+        }
+  
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded Token:', decoded);
+  
+        if (!decoded || !decoded.userId) {
+          throw new Error('Invalid token');
+        }
+  
+        if (req.body.userId !== decoded.userId) {
+          throw new Error('Invalid token');
+        }
+  
+        // Upload image to Cloudinary
+        const uploadedImage = await uploadImageCloud(req.file.path, req.body.userId);
+  
+        // Delete the temp file from multer
+        fs.unlink(req.file.path, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Error deleting temp file:', unlinkErr);
+          } else {
+            console.log('Temp file deleted successfully');
+          }
+        });
+  
+        if (!uploadedImage?.result) {
+          console.log('Image upload failed');
+          return res.status(400).send({ success: false, message: 'Image upload failed' });
+        }
 
-const forgotPassword = async (req, res) => {
-    // Implement the forgot password logic here
-    res.status(501).json({ success: false, error: 'Not implemented' });
+        // Update the user's profile image
+        const user = await User.findById(decoded.userId);
+        user.coverImage = uploadedImage.result.secure_url;
+        await user.save();
+  
+        return res.status(201).send({ success: true, message: 'Image uploaded successfully', imageUrl: uploadedImage.result.secure_url });
+  
+      } catch (error) {
+        console.error('Authentication error:', error);
+        res.status(401).send({ error: 'Please authenticate.' });
+      }
+  
+    });
+  };
 
-}
-export { registerUser, loginUser, forgotPassword };
+export { registerUser, loginUser, uploadImage };

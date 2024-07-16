@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         default: '0123456789'
     },
-    coverImage: {
+    profileImage: {
         type: String,
         trim: true,
         default: 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg'
@@ -50,7 +50,10 @@ userSchema.pre('save', async function (next) {
     }
     next();
 });
-
+//EXPIRED TOKEN IN 1 YEAR
+userSchema.methods.generateAuthToken = async function () {
+    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
 // Method to compare password for login
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
