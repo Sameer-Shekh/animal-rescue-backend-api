@@ -37,10 +37,16 @@ const userSchema = new mongoose.Schema({
     isVolunteer: {
         type: Boolean,
         default: false
-    }
-}, {
+    },
+    range:{
+        type: Number,
+        default: 0
+    },
+},   
+    {
     timestamps: true
-});
+    }
+);
 
 // Pre-save hook to hash the password before saving
 userSchema.pre('save', async function (next) {

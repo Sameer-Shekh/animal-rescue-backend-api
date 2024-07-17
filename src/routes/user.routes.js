@@ -1,7 +1,6 @@
 
 import { Router } from 'express';
-import { loginUser, registerUser, uploadImage} from '../controllers/user.controller.js';
-import  authenticate from '../middlewares/authMiddleware.js';
+import { loginUser, registerUser, uploadImage, updateUser } from '../controllers/user.controller.js';
 
 
 const router = Router();
@@ -12,8 +11,12 @@ router.route('/register').post(registerUser);
 //LOGIN ROUTE
 router.route('/login').post(loginUser);
 
-//UPLOAD IMAGE
-// router.post('/upload',authenticateToken, uploadImage);
+//UPLOAD IMAGE ROUTE
 router.route('/upload').patch(uploadImage);
+
+//UPDATE USER ROUTE
+router.route('/update').patch(updateUser);
+
+//
 
 export default router;

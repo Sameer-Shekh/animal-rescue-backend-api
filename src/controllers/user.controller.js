@@ -3,9 +3,9 @@ import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct path to multer middleware
-import authenticate  from '../middlewares/authMiddleware.js'; // Ensure correct path to authMiddleware
 import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
+import authenticate from '../middlewares/authMiddleware.js';
 
 dotenv.config();
 
@@ -77,6 +77,7 @@ const registerUser = async (req, res) => {
     }
 }
 
+
 const loginUser = async (req, res) =>{
     const { email, password } = req.body;
     try {
@@ -116,7 +117,9 @@ const loginUser = async (req, res) =>{
         res.status(500).json({ success: false, error: error.message });
     }
 }
-const uploadImage = (req, res) => {
+
+
+const uploadImage = [authenticate,(req, res) => {
     upload.single('profileImage')(req, res, async (err) => {
       if (err) {
         console.error('Upload error:', err);
@@ -124,27 +127,8 @@ const uploadImage = (req, res) => {
       }
   
       try {
-        const token = req.header('Authorization').replace('Bearer ', '');
-  
-        if (!process.env.JWT_SECRET) {
-          throw new Error('JWT_SECRET is not defined');
-        }
-  
-        // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded Token:', decoded);
-  
-        if (!decoded || !decoded.userId) {
-          throw new Error('Invalid token');
-        }
-  
-        if (req.body.userId !== decoded.userId) {
-          throw new Error('Invalid token');
-        }
-  
         // Upload image to Cloudinary
         const uploadedImage = await uploadImageCloud(req.file.path, req.body.userId);
-  
         // Delete the temp file from multer
         fs.unlink(req.file.path, (unlinkErr) => {
           if (unlinkErr) {
@@ -172,6 +156,37 @@ const uploadImage = (req, res) => {
       }
   
     });
-  };
+}];
 
-export { registerUser, loginUser, uploadImage };
+const updateUser = [authenticate, async (req, res) => {
+    const { firstName, lastName, phoneNumber, isVolunteer,range } = req.body;
+    try {
+        const user = await User.findById(req.body.userId);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        user.firstName = firstName || user.firstName;
+        user.lastName = lastName || user.lastName;
+        user.phoneNumber = phoneNumber || user.phoneNumber;
+        user.isVolunteer = isVolunteer || user.isVolunteer;
+        user.range = range || user.range;
+        await user.save();
+        res.status(200).json({
+            success: true,
+            message: 'User updated successfully',
+            user:{
+                userId: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                isVolunteer: user.isVolunteer,
+                range: user.range
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error,msg:'User not found'
+        });
+    }
+}];
+
+export { registerUser, loginUser, uploadImage, updateUser };

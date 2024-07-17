@@ -1,8 +1,6 @@
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';// Adjust the path as per your project structure
-import { upload } from '../middlewares/multermiddleware.js';// Adjust the path as per your project structure
-import {uploadImage} from '../controllers/user.controller.js';// Adjust the path as per your project structure
+
 
 dotenv.config();
 
