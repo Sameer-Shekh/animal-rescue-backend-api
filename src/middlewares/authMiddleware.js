@@ -1,19 +1,19 @@
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
-
 dotenv.config();
 
 const authenticate = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
-        
+        console.log(req.body.userId);
         if (!process.env.JWT_SECRET) {
             throw new Error('JWT_SECRET is not defined');
         }
 
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // console.log(decoded);
 
         if (!decoded || !decoded.userId) {
             throw new Error('Invalid token');

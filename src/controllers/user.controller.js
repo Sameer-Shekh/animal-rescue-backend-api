@@ -119,7 +119,7 @@ const loginUser = async (req, res) =>{
 }
 
 
-const uploadImage = [authenticate,(req, res) => {
+const uploadImage = (req, res) => {
     upload.single('profileImage')(req, res, async (err) => {
       if (err) {
         console.error('Upload error:', err);
@@ -127,8 +127,27 @@ const uploadImage = [authenticate,(req, res) => {
       }
   
       try {
+        const token = req.header('Authorization').replace('Bearer ', '');
+  
+        if (!process.env.JWT_SECRET) {
+          throw new Error('JWT_SECRET is not defined');
+        }
+  
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded Token:', decoded);
+  
+        if (!decoded || !decoded.userId) {
+          throw new Error('Invalid token');
+        }
+  
+        if (req.body.userId !== decoded.userId) {
+          throw new Error('Invalid token');
+        }
+  
         // Upload image to Cloudinary
         const uploadedImage = await uploadImageCloud(req.file.path, req.body.userId);
+  
         // Delete the temp file from multer
         fs.unlink(req.file.path, (unlinkErr) => {
           if (unlinkErr) {
@@ -156,7 +175,7 @@ const uploadImage = [authenticate,(req, res) => {
       }
   
     });
-}];
+};
 
 const updateUser = [authenticate, async (req, res) => {
     const { firstName, lastName, phoneNumber, isVolunteer, range } = req.body;
