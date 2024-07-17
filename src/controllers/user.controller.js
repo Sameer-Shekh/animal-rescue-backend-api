@@ -159,7 +159,7 @@ const uploadImage = [authenticate,(req, res) => {
 }];
 
 const updateUser = [authenticate, async (req, res) => {
-    const { firstName, lastName, phoneNumber, isVolunteer,range } = req.body;
+    const { firstName, lastName, phoneNumber, isVolunteer, range } = req.body;
     try {
         const user = await User.findById(req.body.userId);
         if (!user) {
@@ -170,7 +170,9 @@ const updateUser = [authenticate, async (req, res) => {
         user.phoneNumber = phoneNumber || user.phoneNumber;
         user.isVolunteer = isVolunteer || user.isVolunteer;
         user.range = range || user.range;
+        
         await user.save();
+
         res.status(200).json({
             success: true,
             message: 'User updated successfully',
