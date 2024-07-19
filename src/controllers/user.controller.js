@@ -177,6 +177,7 @@ const uploadImage = (req, res) => {
     });
 };
 
+
 const updateUser = [authenticate, async (req, res) => {
     const { firstName, lastName, phoneNumber, isVolunteer, range } = req.body;
     try {
