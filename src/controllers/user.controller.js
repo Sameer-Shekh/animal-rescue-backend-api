@@ -178,7 +178,7 @@ const uploadImage = (req, res) => {
 
 
 const updateUser =  async (req, res) => {
-    const { firstName, lastName, phoneNumber, isVolunteer, range } = req.body;
+    const { firstName, lastName, phoneNumber, isVolunteer, range,email } = req.body;
     try {
         const user = await User.findById(req.body.userId);
         if (!user) {
@@ -189,6 +189,7 @@ const updateUser =  async (req, res) => {
         user.phoneNumber = phoneNumber || user.phoneNumber;
         user.isVolunteer = isVolunteer || user.isVolunteer;
         user.range = range || user.range;
+        user.email = email || user.email;
         
         await user.save();
 
@@ -201,7 +202,8 @@ const updateUser =  async (req, res) => {
                 lastName: user.lastName,
                 phoneNumber: user.phoneNumber,
                 isVolunteer: user.isVolunteer,
-                range: user.range
+                range: user.range,
+                email: user.email
             }
         });
     } catch (error) {
@@ -227,5 +229,28 @@ const deleteUser =  async (req, res) => {
     }
 };
 
+//UPDATE PASSWORD FUNCTIONALITY IS NOT IMPLEMENTED
+const updatePassword = async (req, res) => {
+    try{
+        const {userId, password, newPassword} = req.body;
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({success: false, error: 'User not found'});
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if(!isPasswordValid){
+            return res.status(401).json({success: false, error: 'Invalid password'});
+        }
+        user.password = newPassword;
+        await user.save();
+        res.status(200).json({
+            success: true, 
+            message: 'Password updated successfully',
+        });
+    }
+    catch(error){
+        res.status(500).json({success: false, error: error.message});
+    }
+};
 //LOGOUT USER IS HANDLED ON FRONTEND USING LOCAL STORAGE
-export { registerUser, loginUser, uploadImage, updateUser, deleteUser};
+export { registerUser, loginUser, uploadImage, updateUser, deleteUser, updatePassword };

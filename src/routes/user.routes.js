@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { loginUser, registerUser, uploadImage, updateUser ,deleteUser} from '../controllers/user.controller.js';
+import { loginUser, registerUser, uploadImage, updateUser ,deleteUser,updatePassword} from '../controllers/user.controller.js';
 import authenticate from '../middlewares/authMiddleware.js';
 
 
@@ -20,6 +20,9 @@ router.route('/update').patch(authenticate,updateUser);
 
 //DELETE USER ROUTE
 router.route('/delete').delete(authenticate,deleteUser);
+
+//UPDATE PASSWORD ROUTE
+router.route('/updatePassword').patch(authenticate,updatePassword);
 
 //LOGOUT ROUTE IS HANDLE ON FRONTEND USING LOCAL STORAGE
 
