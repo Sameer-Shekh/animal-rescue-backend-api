@@ -229,7 +229,7 @@ const deleteUser =  async (req, res) => {
     }
 };
 
-//UPDATE PASSWORD FUNCTIONALITY IS NOT IMPLEMENTED
+
 const updatePassword = async (req, res) => {
     try{
         const {userId, password, newPassword} = req.body;
