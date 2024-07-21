@@ -3,6 +3,7 @@ import express from 'express';
 import connectDB from './src/db/connection.js';
 import cors from 'cors';
 import router from './src/routes/user.routes.js';
+// import routerforpost from './src/routes/userpost.routes.js'
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use("/api", router);
+// app.use("/api/user",routerforpost);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

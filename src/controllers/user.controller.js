@@ -5,7 +5,6 @@ import bcrypt from 'bcrypt';
 import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct path to multer middleware
 import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
-import authenticate from '../middlewares/authMiddleware.js';
 
 dotenv.config();
 
@@ -178,7 +177,7 @@ const uploadImage = (req, res) => {
 };
 
 
-const updateUser = [authenticate, async (req, res) => {
+const updateUser =  async (req, res) => {
     const { firstName, lastName, phoneNumber, isVolunteer, range } = req.body;
     try {
         const user = await User.findById(req.body.userId);
@@ -209,6 +208,24 @@ const updateUser = [authenticate, async (req, res) => {
         res.status(500).json({ success: false, error: error,msg:'User not found'
         });
     }
-}];
+};
 
-export { registerUser, loginUser, uploadImage, updateUser };
+
+const deleteUser =  async (req, res) => {
+    const { userId } = req.body;
+    console.log(userId);
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        await User.findByIdAndDelete(userId); // This deletes the user
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+//LOGOUT USER IS HANDLED ON FRONTEND USING LOCAL STORAGE
+export { registerUser, loginUser, uploadImage, updateUser, deleteUser};
