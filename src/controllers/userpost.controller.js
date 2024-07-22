@@ -8,6 +8,7 @@ import User from '../models/user.model.js';
 
 dotenv.config();
 
+// Create a new post
 const createPost = (req,res)=>{
     upload.array('image', 4)(req, res, async (err) => { // Handle multiple images with the field name 'images'
         if (err) {
@@ -77,11 +78,6 @@ const createPost = (req,res)=>{
             imageUrls,
             description,
             location,
-            // location:{
-                // latitude:defaultLocation.latitude,
-                // longitude:defaultLocation.longitude
-            // }
-
           });
     
         } catch (error) {
@@ -91,10 +87,41 @@ const createPost = (req,res)=>{
       });
 };
 
-const getPost = async (req, res) => {};
+// Get a post by ID
+const getPost = async (req, res) => {
+  try {
+    const userId = req.body.userId; // Assuming the user ID is sent in the request body
+    const posts = await Post.find({ userId: userId });
+    if (!posts.length) {
+      return res.status(404).send({ success: false, message: 'No posts found for this user' });
+    }
+    return res.status(200).send({ success: true, posts });
+  }
+  catch (error) {
+    console.error('Error:', error.message);
+    return res.status(400).send({ success: false, message: error.message });
+  }
+};
 
-const updatePost = async (req, res) => {};
+// Update a post by ID
+const updatePost = async (req, res) => {
+  try{
+    const post = await Post.findOne({_id: req.body._id});
+    if(!post){
+      return res.status(404).send({success: false, message: 'Post not found'});
+    }
+    post.description = req.body.description || post.description;
+    post.location = req.body.location || post.location;
+    await post.save();
+    return res.status(200).send({success: true, message: 'Post updated successfully'});
+  }
+  catch(error){
+    console.error('Error:', error.message);
+    return res.status(400).send({success: false, message: error.message});
+  }
+};
 
+// Delete a post by ID
 const deletePost =  async (req, res) => {
     try {
         console.log(req.body);

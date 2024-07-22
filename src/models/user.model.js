@@ -42,19 +42,17 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    dateOfBirth: {
+        type: Date,
+        default: Date.now
+    },
     posts:[
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Post',
         }
       ],
-      likedPosts: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Post'
-        }
-    ]
-},   
+    },  
     {
     timestamps: true
     }
