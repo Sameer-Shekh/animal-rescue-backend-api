@@ -61,7 +61,7 @@ const createPost = (req,res)=>{
           const post = new Post({
             image: imageUrls,
             description,
-            userId: decoded.userId // Make sure userId is correctly assigned
+            userId: decoded.userId, // Make sure userId is correctly assigned
           });
     
           await post.save();
@@ -70,11 +70,13 @@ const createPost = (req,res)=>{
             $push: { posts: post._id }
         });
 
-
+          const location = post.location || { longitude: 0, latitude: 0 };
           return res.status(201).send({
             success: true,
             message: 'Images uploaded successfully',
             imageUrls,
+            description,
+            location,
             // location:{
                 // latitude:defaultLocation.latitude,
                 // longitude:defaultLocation.longitude
