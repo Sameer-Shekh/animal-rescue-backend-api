@@ -1,26 +1,37 @@
 import mongoose from 'mongoose';
 
 const postSchema = new mongoose.Schema({
-    title: {
+    description: {
         type: String,
         required: true,
         trim: true
     },
-    content: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    image: {
+    image:[ {
         type: String,
         trim: true,
         default: 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg' // default image placeholder
-    },
-    author: {
+    }],
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
+    location:{
+        longitude:{
+            type: Number,
+            default: 0
+        },
+        latitude:{
+            type: Number,
+            default: 0
+        },
+    },
+    likes:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
+    ],
 }, 
 {
     timestamps: true

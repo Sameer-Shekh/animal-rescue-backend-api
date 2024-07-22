@@ -1,19 +1,19 @@
-// import { Router } from 'express';
-// import { createPost, deletePost, getPosts, updatePost } from '../controllers/userpost.controller.js';
-// import authenticate from '../middlewares/authMiddleware.js';
+import {Router} from 'express';
+import { createPost , deletePost , getPost , updatePost} from '../controllers/userpost.controller.js';
+import authenticate from '../middlewares/authMiddleware.js';
 
-// const routerforpost = Router();
+const postRouter = Router();
 
-// //GET ALL POSTS
-// routerforpost.route('/').get(getPosts);
+//CREATE POST ROUTE
+postRouter.route('/createPost').post(createPost);
 
-// //CREATE POST
-// routerforpost.route('/create-post').post(createPost);
+//GET POST ROUTE
+postRouter.route('/getPost').get(authenticate,getPost);
 
-// //UPDATE POST
-// routerforpost.route('/update/:id').patch(updatePost);
+//UPDATE POST ROUTE
+postRouter.route('/updatePost').patch(authenticate,updatePost);
 
-// //DELETE POST
-// routerforpost.route('/delete/:id').delete(deletePost);
+//DELETE POST ROUTE
+postRouter.route('/deletePost').delete(authenticate, deletePost);
 
-// export default routerforpost;
+export default postRouter;
