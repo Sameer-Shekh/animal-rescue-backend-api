@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { createPost , deletePost , getPost , updatePost} from '../controllers/userpost.controller.js';
+import { createPost , deletePost , getPost , updatePost,getAllPost} from '../controllers/userpost.controller.js';
 import authenticate from '../middlewares/authMiddleware.js';
 
 const postRouter = Router();
@@ -15,5 +15,8 @@ postRouter.route('/updatePost').patch(authenticate,updatePost);
 
 //DELETE POST ROUTE
 postRouter.route('/deletePost').delete(authenticate, deletePost);
+
+//GET ALL POSTS ROUTE
+postRouter.route('/getAllPost').get(authenticate, getAllPost);
 
 export default postRouter;

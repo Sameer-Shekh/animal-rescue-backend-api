@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct path to multer middleware
 import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
+import User from '../models/user.model.js';
 import Post from '../models/userpost.model.js';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
 
 dotenv.config();
 
@@ -58,12 +58,20 @@ const createPost = (req,res)=>{
             return res.status(400).send({ success: false, message: 'Image upload failed' });
           }
     
-          const { description } = req.body;
+          const { description, filter } = req.body;
+          let priority = 5; // Default priority
+          if (filter === 'urgent') 
+          {
+            priority = 10;
+          }
           const post = new Post({
             image: imageUrls,
             description,
             userId: decoded.userId, // Make sure userId is correctly assigned
+            priority,
+            filter,
           });
+          console.log('Post:', post);
     
           await post.save();
           
@@ -78,6 +86,8 @@ const createPost = (req,res)=>{
             imageUrls,
             description,
             location,
+            priority,
+            filter,
           });
     
         } catch (error) {
@@ -112,6 +122,7 @@ const updatePost = async (req, res) => {
     }
     post.description = req.body.description || post.description;
     post.location = req.body.location || post.location;
+    post.priority = req.body.priority || post.priority;
     await post.save();
     return res.status(200).send({success: true, message: 'Post updated successfully'});
   }
@@ -150,4 +161,22 @@ const deletePost =  async (req, res) => {
     }
 };
 
-export { createPost, updatePost, deletePost,getPost };
+//GET ALL POSTS
+const getAllPost = async (req, res)=>{
+  try {
+    const posts = await Post.find()
+        .populate('userId') // Populate user details
+        .sort({ priority: -1 }); // Sort by priority in descending order
+
+    if (!posts.length) {
+        return res.status(404).send({ success: false, message: 'No posts found' });
+    }
+
+    return res.status(200).send({ success: true, posts });
+    } 
+    catch (error) {
+        console.error('Error:', error);
+        return res.status(500).send({ success: false, message: 'Server Error', error: error.message });
+    }
+}
+export { createPost, updatePost, deletePost, getPost, getAllPost };
