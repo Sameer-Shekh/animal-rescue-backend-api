@@ -24,7 +24,12 @@ router.route('/delete').delete(authenticate,deleteUser);
 //UPDATE PASSWORD ROUTE
 router.route('/updatePassword').patch(authenticate,updatePassword);
 
-//LOGOUT ROUTE IS HANDLE ON FRONTEND USING LOCAL STORAGE
+
+//forgot password route
+// router.route('/forgotPassword').post(forgotPassword);
+
+//reset password route
+// router.route('/resetPassword/:resetToken').put(resetPassword);
 
 
 export default router;

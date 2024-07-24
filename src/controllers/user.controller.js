@@ -5,6 +5,9 @@ import bcrypt from 'bcrypt';
 import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct path to multer middleware
 import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
+import User from '../models/user.model.js';
+import sendEmail from '../utils/sendEmail.js';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -254,5 +257,62 @@ const updatePassword = async (req, res) => {
         res.status(500).json({success: false, error: error.message});
     }
 };
-//LOGOUT USER IS HANDLED ON FRONTEND USING LOCAL STORAGE
-export { registerUser, loginUser, uploadImage, updateUser, deleteUser, updatePassword };
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        const resetToken = user.getResetPasswordToken();
+        await user.save();
+
+        const resetUrl = `http://localhost:3000/resetPassword/${resetToken}`;
+        const message = `
+            <h1>You have requested a password reset</h1>
+            <p>Please go to this link to reset your password</p>
+            <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+        `;
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: 'Password Reset Request',
+                message
+            });
+            res.status(200).json({ success: true, message: 'Email sent' });
+        } catch (error) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save();
+            return res.status(500).json({ success: false, error: 'Email could not be sent' });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+
+const resetPassword = async (req, res) => {
+    const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+    try {
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+        if (!user) {
+            return res.status(400).json({ success: false, error: 'Invalid token' });
+        }
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+        res.status(200).json({ success: true, message: 'Password reset successful' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+export { registerUser, loginUser, uploadImage, updateUser, deleteUser, updatePassword ,forgotPassword,resetPassword}; 
