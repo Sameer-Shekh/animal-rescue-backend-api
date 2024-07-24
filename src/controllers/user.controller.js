@@ -6,7 +6,7 @@ import {upload}  from '../middlewares/multermiddleware.js'; // Ensure correct pa
 import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
 import User from '../models/user.model.js';
-import sendEmail from '../utils/sendEmail.js';
+// import sendEmail from '../utils/sendEmail.js';
 import crypto from 'crypto';
 
 dotenv.config();
