@@ -110,7 +110,10 @@ const createPost = (req, res) => {
 const getPost = async (req, res) => {
   try {
     const userId = req.body.userId; // Assuming the user ID is sent in the request body
-    const posts = await Post.find({ userId: userId });
+    const posts = await Post.find({ userId: userId }).populate({
+      path: 'userId',
+      select: 'firstName lastName isVolunteer profileImage' 
+    });
     if (!posts.length) {
       return res.status(404).send({ success: false, message: 'No posts found for this user' });
     }
