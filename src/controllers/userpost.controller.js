@@ -80,6 +80,7 @@ const createPost = (req,res)=>{
             imageUrls,
             description,
             location,
+            priority,
           });
     
         } catch (error) {
