@@ -173,7 +173,10 @@ const deletePost =  async (req, res) => {
 const getAllPost = async (req, res)=>{
   try {
     const posts = await Post.find()
-        .populate('userId') // Populate user details
+        .populate({
+          path: 'userId',
+          select: 'firstName lastName isVolunteer' //
+        }) // Populate user details
         .sort({ priority: -1 }); // Sort by priority in descending order
 
     if (!posts.length) {
