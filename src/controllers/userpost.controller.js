@@ -9,86 +9,101 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 // Create a new post
-const createPost = (req,res)=>{
-    upload.array('image', 4)(req, res, async (err) => { // Handle multiple images with the field name 'images'
-        if (err) {
-          console.error('Upload error:', err);
-          return res.status(400).send({ success: false, message: 'Upload failed', error: err.message });
-        }
-    
-        try {
-          if (!req.files || req.files.length === 0) {
-            return res.status(400).send({ success: false, message: 'No files uploaded' });
-          }
-    
-          const token = req.header('Authorization').replace('Bearer ', '');
-          if (!process.env.JWT_SECRET) {
-            throw new Error('JWT_SECRET is not defined');
-          }
-    
-          // Verify the token
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          if (!decoded || !decoded.userId) {
-            throw new Error('Invalid token');
-          }
-    
-          if (req.body.userId !== decoded.userId) {
-            throw new Error('Invalid token');
-          }
-    
-          // Upload images to Cloudinary
-          const uploadPromises = req.files.map(file => uploadImageCloud(file.path, req.body.userId));
-          const uploadedImages = await Promise.all(uploadPromises);
-    
-            // Delete temp files from multer
-            req.files.forEach(file => {
-            fs.unlink(file.path, (unlinkErr) => {
-            if (unlinkErr) {
-                console.error('Error deleting temp file:', unlinkErr);
-            } else {
-                console.log('Temp file deleted successfully:', file.path);
-            }
-            });
-        });
-    
-          const imageUrls = uploadedImages.map(upload => upload.result.secure_url);
-    
-          if (imageUrls.some(url => !url)) {
-            console.log('One or more image uploads failed');
-            return res.status(400).send({ success: false, message: 'Image upload failed' });
-          }
-    
-          const { description, priority, location: { longitude, latitude } = {} } = req.body;
-          const post = new Post({
-            image: imageUrls,
-            description,
-            userId: decoded.userId, // Make sure userId is correctly assigned
-            priority,
-            location: { longitude: longitude || 0, latitude: latitude || 0 },
-          });
-          console.log('Post:', post);
-    
-          await post.save();
-          
-          await User.findByIdAndUpdate(decoded.userId, {
-            $push: { posts: post._id }
-        });
+const createPost = (req, res) => {
+  upload.array('image', 4)(req, res, async (err) => { // Handle multiple images with the field name 'image'
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).send({ success: false, message: 'Upload failed', error: err.message });
+    }
 
-          const location = post.location || { longitude: 0, latitude: 0 };
-          return res.status(201).send({
-            success: true,
-            message: 'Images uploaded successfully',
-            imageUrls,
-            description,
-            location,
-            priority,
-          });
-    
-        } catch (error) {
-          console.error('Error:', error.message);
-          return res.status(400).send({ success: false, message: error.message });
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).send({ success: false, message: 'No files uploaded' });
+      }
+
+      const token = req.header('Authorization').replace('Bearer ', '');
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not defined');
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded || !decoded.userId) {
+        throw new Error('Invalid token');
+      }
+
+      if (req.body.userId !== decoded.userId) {
+        throw new Error('User ID mismatch');
+      }
+
+      // Upload images to Cloudinary
+      const uploadPromises = req.files.map(file => uploadImageCloud(file.path, req.body.userId));
+      const uploadedImages = await Promise.all(uploadPromises);
+
+      // Delete temp files from multer
+      req.files.forEach(file => {
+        fs.unlink(file.path, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Error deleting temp file:', unlinkErr);
+          } else {
+            console.log('Temp file deleted successfully:', file.path);
+          }
+        });
+      });
+
+      const imageUrls = uploadedImages.map(upload => upload.result.secure_url);
+
+      if (imageUrls.some(url => !url)) {
+        console.log('One or more image uploads failed');
+        return res.status(400).send({ success: false, message: 'Image upload failed' });
+      }
+
+      // Parse form-data
+      const { description, priority, longitude, latitude } = req.body;
+
+      // Log received data for debugging
+      // console.log('Received form-data:', req.body);
+
+      // Ensure longitude and latitude are numbers
+      const longitudeNum = parseFloat(longitude) || 0;
+      const latitudeNum = parseFloat(latitude) || 0;
+
+      // Create a new Post object
+      const post = new Post({
+        image: imageUrls,
+        description,
+        userId: decoded.userId, // Ensure userId is correctly assigned
+        priority,
+        location: {
+          longitude: longitudeNum,
+          latitude: latitudeNum
         }
       });
+
+      // console.log('Post:', post);
+
+      await post.save();
+
+      await User.findByIdAndUpdate(decoded.userId, {
+        $push: { posts: post._id }
+      });
+
+      return res.status(201).send({
+        success: true,
+        message: 'Images uploaded successfully',
+        imageUrls,
+        description,
+        priority,
+        location: {
+          longitude: post.location.longitude,
+          latitude: post.location.latitude
+        }
+      });
+    } catch (error) {
+      console.error('Error:', error.message);
+      return res.status(400).send({ success: false, message: error.message });
+    }
+  });
 };
 
 // Get a post by ID
@@ -172,4 +187,6 @@ const getAllPost = async (req, res)=>{
         return res.status(500).send({ success: false, message: 'Server Error', error: error.message });
     }
 }
+
+
 export { createPost, updatePost, deletePost, getPost, getAllPost };
