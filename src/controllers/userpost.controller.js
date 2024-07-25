@@ -58,12 +58,13 @@ const createPost = (req,res)=>{
             return res.status(400).send({ success: false, message: 'Image upload failed' });
           }
     
-          const { description, priority } = req.body;
+          const { description, priority, location: { longitude, latitude } = {} } = req.body;
           const post = new Post({
             image: imageUrls,
             description,
             userId: decoded.userId, // Make sure userId is correctly assigned
             priority,
+            location: { longitude: longitude || 0, latitude: latitude || 0 },
           });
           console.log('Post:', post);
     
@@ -114,7 +115,6 @@ const updatePost = async (req, res) => {
       return res.status(404).send({success: false, message: 'Post not found'});
     }
     post.description = req.body.description || post.description;
-    post.location = req.body.location || post.location;
     post.priority = req.body.priority || post.priority;
     await post.save();
     return res.status(200).send({success: true, message: 'Post updated successfully'});

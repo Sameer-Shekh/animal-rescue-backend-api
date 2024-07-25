@@ -8,7 +8,7 @@ const postRouter = Router();
 postRouter.route('/createPost').post(createPost);
 
 //GET POST ROUTE
-postRouter.route('/getPost').get(authenticate,getPost);
+postRouter.route('/getPost').post(authenticate,getPost);
 
 //UPDATE POST ROUTE
 postRouter.route('/updatePost').patch(authenticate,updatePost);
