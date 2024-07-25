@@ -26,8 +26,7 @@ const postSchema = new mongoose.Schema({
             default: 0
         },
     },
-    priority: { type: Number, default: 5 },
-    filter: { type: String, default: 'normal' },
+    priority: { type: Number, default: 0 },
 }, 
 {
     timestamps: true

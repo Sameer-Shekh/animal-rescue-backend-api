@@ -58,18 +58,12 @@ const createPost = (req,res)=>{
             return res.status(400).send({ success: false, message: 'Image upload failed' });
           }
     
-          const { description, filter } = req.body;
-          let priority = 5; // Default priority
-          if (filter === 'urgent') 
-          {
-            priority = 10;
-          }
+          const { description, priority } = req.body;
           const post = new Post({
             image: imageUrls,
             description,
             userId: decoded.userId, // Make sure userId is correctly assigned
             priority,
-            filter,
           });
           console.log('Post:', post);
     
@@ -86,8 +80,6 @@ const createPost = (req,res)=>{
             imageUrls,
             description,
             location,
-            priority,
-            filter,
           });
     
         } catch (error) {
