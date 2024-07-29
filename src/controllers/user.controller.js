@@ -196,7 +196,7 @@ const updateUser =  async (req, res) => {
         user.isVolunteer = isVolunteer || user.isVolunteer;
         user.range = range || user.range;
         user.email = email || user.email;
-        user.dateOfBirth = user.dateOfBirth || dateOfBirth;
+        user.dateOfBirth = dateOfBirth || user.dateOfBirth;
 
         
         await user.save();
