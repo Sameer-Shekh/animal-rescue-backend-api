@@ -112,6 +112,10 @@ const loginUser = async (req, res) =>{
                 firstName: user.firstName,
                 lastName: user.lastName,
                 profileImage: user.profileImage,
+                dateofBirth: user.dateofBirth,
+                range: user.range,
+                phoneNumber: user.phoneNumber,
+                isVolunteer: user.isVolunteer,
             }
         });
     } catch (error) {
