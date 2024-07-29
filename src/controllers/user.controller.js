@@ -211,7 +211,7 @@ const updateUser =  async (req, res) => {
                 isVolunteer: user.isVolunteer,
                 range: user.range,
                 email: user.email,
-                dateofBirth: user.dateofBirth
+                dateofBirth: user.dateofBirth,
             }
         });
     } catch (error) {
