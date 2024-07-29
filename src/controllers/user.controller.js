@@ -112,7 +112,7 @@ const loginUser = async (req, res) =>{
                 firstName: user.firstName,
                 lastName: user.lastName,
                 profileImage: user.profileImage,
-                dateofBirth: user.dateofBirth || Date.now, // Replace 'defaultDOB' with your default value
+                dateofBirth: user.dateofBirth || '04/10/2002', // Replace 'defaultDOB' with your default value
                 range: user.range || 0, // Replace 'defaultRange' with your default value
                 phoneNumber: user.phoneNumber || '1234567890', // Replace 'defaultPhoneNumber' with your default value
                 isVolunteer: user.isVolunteer !== undefined ? user.isVolunteer : false, // Default to false
