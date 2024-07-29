@@ -146,6 +146,23 @@ const updatePost = async (req, res) => {
 // Delete a post by ID
 const deletePost =  async (req, res) => {
     try {
+      const token = req.header('Authorization')?.replace('Bearer ', '');
+        
+      if (!token) {
+          throw new Error('No token provided');
+      }
+
+      if (!process.env.JWT_SECRET) {
+          throw new Error('JWT_SECRET is not defined');
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      if (!decoded || !decoded.userId) {
+          throw new Error('Invalid token');
+      }
+
         console.log(req.body);
         const post = await Post.findOne({ _id: req.body._id });
         if (!post) {
