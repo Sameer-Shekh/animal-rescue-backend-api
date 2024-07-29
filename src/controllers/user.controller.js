@@ -184,7 +184,7 @@ const uploadImage = (req, res) => {
 
 
 const updateUser =  async (req, res) => {
-    const { firstName, lastName, phoneNumber, isVolunteer, range, email,dateofBirth } = req.body;
+    const { firstName, lastName, phoneNumber, isVolunteer, range, email, dateofBirth } = req.body;
     try {
         const user = await User.findById(req.body.userId);
         if (!user) {
@@ -211,7 +211,7 @@ const updateUser =  async (req, res) => {
                 isVolunteer: user.isVolunteer,
                 range: user.range,
                 email: user.email,
-                dateofBirth: user.dateofBirth,
+                dateofBirth: dateofBirth||user.dateofBirth,
             }
         });
     } catch (error) {
