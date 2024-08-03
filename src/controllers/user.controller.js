@@ -263,6 +263,7 @@ const updatePassword = async (req, res) => {
     }
 };
 
+
 const getUser = async (req,res) =>{
     try{
         const {userId} = req.body;

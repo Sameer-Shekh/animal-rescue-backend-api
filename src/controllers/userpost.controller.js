@@ -61,9 +61,6 @@ const createPost = (req, res) => {
       // Parse form-data
       const { description, priority, longitude, latitude } = req.body;
 
-      // Log received data for debugging
-      // console.log('Received form-data:', req.body);
-
       // Ensure longitude and latitude are numbers
       const longitudeNum = parseFloat(longitude) || 0;
       const latitudeNum = parseFloat(latitude) || 0;
@@ -80,8 +77,6 @@ const createPost = (req, res) => {
         }
       });
 
-      // console.log('Post:', post);
-
       await post.save();
 
       await User.findByIdAndUpdate(decoded.userId, {
@@ -94,6 +89,7 @@ const createPost = (req, res) => {
         imageUrls,
         description,
         priority,
+        _id: post._id,
         location: {
           longitude: post.location.longitude,
           latitude: post.location.latitude
