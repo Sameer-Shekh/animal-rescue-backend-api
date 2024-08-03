@@ -83,6 +83,8 @@ const createPost = (req, res) => {
         $push: { posts: post._id }
       });
 
+      const user = await User.findById(decoded.userId);
+
       return res.status(201).send({
         success: true,
         message: 'Images uploaded successfully',
@@ -93,6 +95,12 @@ const createPost = (req, res) => {
         location: {
           longitude: post.location.longitude,
           latitude: post.location.latitude
+        },
+        userId : {
+          _id:user._id,
+          firstName:user.firstName,
+          lastName:user.lastName,
+          profileImage:user.profileImage
         }
       });
     } catch (error) {
