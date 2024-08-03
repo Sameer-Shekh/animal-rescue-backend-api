@@ -7,6 +7,7 @@ import fs from 'fs';
 import { uploadImageCloud } from '../utils/cloudinary.js';
 // import sendEmail from '../utils/sendEmail.js';
 import crypto from 'crypto';
+import { profile } from 'console';
 
 dotenv.config();
 
@@ -262,61 +263,30 @@ const updatePassword = async (req, res) => {
     }
 };
 
-// const forgotPassword = async (req, res) => {
-//     try {
-//         const { email } = req.body;
-//         const user = await User.findOne({ email });
-//         if (!user) {
-//             return res.status(404).json({ success: false, error: 'User not found' });
-//         }
-//         const resetToken = user.getResetPasswordToken();
-//         await user.save();
+const getUser = async (req,res) =>{
+    try{
+        const {userId} = req.body;
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({success: false, error: 'User not found'});
+        }
+        res.status(200).json({
+            success: true,
+            user:{
+                userId: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                isVolunteer: user.isVolunteer,
+                range: user.range,
+                email: user.email,
+                dateOfBirth: user.dateOfBirth,
+                profile : user.profileImage,
+            }
+        })
+    }
+    catch(error){
+        res.status(500).json({success: false, error: error.message});
+}};
 
-//         const resetUrl = `http://localhost:3000/resetPassword/${resetToken}`;
-//         const message = `
-//             <h1>You have requested a password reset</h1>
-//             <p>Please go to this link to reset your password</p>
-//             <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
-//         `;
-//         try {
-//             await sendEmail({
-//                 to: user.email,
-//                 subject: 'Password Reset Request',
-//                 message
-//             });
-//             res.status(200).json({ success: true, message: 'Email sent' });
-//         } catch (error) {
-//             user.resetPasswordToken = undefined;
-//             user.resetPasswordExpire = undefined;
-//             await user.save();
-//             return res.status(500).json({ success: false, error: 'Email could not be sent' });
-//         }
-//     }
-//     catch (error) {
-//         res.status(500).json({ success: false, error: error.message });
-//     }
-// };
-
-
-// const resetPassword = async (req, res) => {
-//     const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-//     try {
-//         const user = await User.findOne({
-//             resetPasswordToken,
-//             resetPasswordExpire: { $gt: Date.now() }
-//         });
-//         if (!user) {
-//             return res.status(400).json({ success: false, error: 'Invalid token' });
-//         }
-//         user.password = req.body.password;
-//         user.resetPasswordToken = undefined;
-//         user.resetPasswordExpire = undefined;
-
-//         await user.save();
-//         res.status(200).json({ success: true, message: 'Password reset successful' });
-//     } catch (error) {
-//         res.status(500).json({ success: false, error: error.message });
-//     }
-// }
-
-export { registerUser, loginUser, uploadImage, updateUser, deleteUser, updatePassword }; 
+export { registerUser, loginUser, uploadImage, updateUser, deleteUser, updatePassword ,getUser}; 

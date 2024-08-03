@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { loginUser, registerUser, uploadImage, updateUser ,deleteUser,updatePassword} from '../controllers/user.controller.js';
+import { loginUser, registerUser, uploadImage, updateUser ,deleteUser,updatePassword, getUser} from '../controllers/user.controller.js';
 import authenticate from '../middlewares/authMiddleware.js';
 
 
@@ -24,12 +24,8 @@ router.route('/delete').delete(authenticate,deleteUser);
 //UPDATE PASSWORD ROUTE
 router.route('/updatePassword').patch(authenticate,updatePassword);
 
-
-//forgot password route
-// router.route('/forgotPassword').post(forgotPassword);
-
-//reset password route
-// router.route('/resetPassword/:resetToken').put(resetPassword);
+//GET USER INFO ROUTE
+router.route('/getUser').post(authenticate,getUser);
 
 
 export default router;
