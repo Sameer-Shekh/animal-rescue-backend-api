@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Chat</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.io Chat</h1>
+    <input type="text" id="postId" placeholder="Enter Post ID">
+    <button id="join">Join Room</button>
+    <br>
+    <input type="text" id="comment" placeholder="Enter comment">
+    <button id="send">Send Comment</button>
+    <ul id="comments"></ul>
+
+    <script>
+        const postIdInput = document.getElementById("postId");
+        const joinButton = document.getElementById("join");
+        const commentInput = document.getElementById("comment");
+        const sendButton = document.getElementById("send");
+        const commentsList = document.getElementById("comments");
+
+        const socket = io("http://localhost:3000");
+
+        let currentPostId = '';
+        const userId = '66a792d923c075fd1b6740dc'; // Replace with actual user ID
+
+        joinButton.addEventListener("click", () => {
+            const postId = postIdInput.value;
+            if (postId) {
+                currentPostId = postId;
+                socket.emit("joinPost", postId);
+                commentsList.innerHTML = `<li><strong>Joined room:</strong> ${postId}</li>`;
+            }
+        });
+
+        sendButton.addEventListener("click", () => {
+            const comment = commentInput.value;
+            if (comment && currentPostId) {
+                socket.emit("sendComment", { content: comment, userId: userId, _id: currentPostId });
+                commentInput.value = "";
+            }
+        });
+
+        socket.on("connect", () => {
+            console.log("Connected to the server", socket.id);
+        });
+
+        socket.on("receiveComment", (comment) => {
+            commentsList.innerHTML += `<li><strong>${comment.user}:</strong> ${comment.content}</li>`;
+        });
+
+        socket.on("previousComments", (comments) => {
+            comments.forEach(({ user, content }) => {
+                commentsList.innerHTML += `<li><strong>${user}:</strong> ${content}</li>`;
+            });
+        });
+    </script>
+</body>
+</html>
