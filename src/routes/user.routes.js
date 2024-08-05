@@ -25,7 +25,7 @@ router.route('/delete').delete(authenticate,deleteUser);
 router.route('/updatePassword').patch(authenticate,updatePassword);
 
 //GET USER INFO ROUTE
-router.route('/getUser').post(authenticate,getUser);
+router.route('/getUser').post(getUser);
 
 
 export default router;
