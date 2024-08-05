@@ -8,7 +8,8 @@ export const createComment = async (req, res) => {
     const comment = new Comment({
       content,
       user: userId,
-      post: _id
+      post: _id,
+      time: Date.now()
     });
 
     await comment.save();

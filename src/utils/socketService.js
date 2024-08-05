@@ -25,7 +25,8 @@ export function handleSocketConnections(io) {
       const comment = new Comment({
           content,
           user: userId,
-          post: _id
+          post: _id,
+          time: Date.now(),
       });
   
       try {
