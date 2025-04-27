@@ -1,3 +1,4 @@
+dotenv.config();
 import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
@@ -9,7 +10,6 @@ import postRouter from './src/routes/userpost.routes.js';
 import commentRouter from './src/routes/comment.routes.js'; // Adjust path as necessary
 import { handleSocketConnections } from './src/utils/socketService.js'; // Adjust path as necessary
 
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
